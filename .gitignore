@@ -30,3 +30,7 @@ cabal.project.local~
 *.cabal
 
 cache/
+
+# Ignore the resulting products
+
+public/
