@@ -351,6 +351,7 @@ dictionaryWord dicNicoSpecialYomi dicPixiv Entry{entryYomi, entryWord} = and
   , not ("あいまいさ" `T.isInfixOf` entryYomi)
   , not ("一覧" `T.isSuffixOf` entryWord)
   , not ("画像集" `T.isSuffixOf` entryWord)
+  , not ("素材リンク" `T.isSuffixOf` entryWord)
     -- 読みがなについて読みがなで言及しているものは特殊な読みであることが多いので除外
   , not ("よみかた" `T.isSuffixOf` entryYomi)
   , not ("よみがな" `T.isSuffixOf` entryYomi)
