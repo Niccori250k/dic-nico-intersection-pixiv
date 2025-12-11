@@ -424,7 +424,7 @@ dictionaryWord dicNicoSpecialYomi dicPixiv Entry{entryYomi, entryWord} = and
         *> many1 (space <|> digit <|> char '-') *> endOfInput) entryWord
     -- 1月1日 のような単語はあっても辞書として意味がなく容量を食うだけなので除外
     -- 元のコードだと 9月9日はチルノの日 など「～～の日」も除外されていたのでちょっと改良
-    -- 利益が薄いのは確かだが、 四月一日(わたぬき) と 月面着陸の日 が除外されていたので、無駄ではないはず
+    -- 利益が薄いのは確かだが、 月面着陸の日 が除外されていたので、無駄ではないはず。四月一日(わたぬき) が除外されてるのはよく考えたらどうしようもなかった
   , isLeft $ parseOnly (many1 (digit <|> satisfy (\c -> c `elem` ("一二三四五六七八九十" :: String))) *> string "月" *> many1 (digit <|> satisfy (\c -> c `elem` ("一二三四五六七八九十" :: String))) *> string "日" *> endOfInput) entryWord
     -- 年を示す単語で始まるのは連番記事であることが多いし変換やサジェストの役にも立たないので除外
     -- ただ 3年B組金八先生 などがあるため2桁以上要求する
