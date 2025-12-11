@@ -1,17 +1,17 @@
 # dic-nico-intersection-pixiv
 
-ニコニコ大百科とピクシブ百科事典の共通部分のIME辞書。
-元リポジトリが長らく更新されていなかったためフォークしました。
+ニコニコ大百科とピクシブ百科事典の共通部分のIME辞書。  
+元リポジトリが長らく更新されていなかったためフォークしました。Haskellについては全くの無知です。
 
 # ダウンロード
 
-[dic-nico-intersection-pixiv-google.txt](https://raw.githubusercontent.com/Niccori250k/dic-nico-intersection-pixiv/refs/heads/master/public/dic-nico-intersection-pixiv-google.txt)
+[dic-nico-intersection-pixiv-google.txt](https://raw.githubusercontent.com/Niccori250k/dic-nico-intersection-pixiv/master/public/dic-nico-intersection-pixiv-google.txt)
 
 Google日本語入力およびMozc形式です。
 
 # 説明
 
-ニコニコ大百科とピクシブ百科事典の双方に登録されている単語の辞書です。
+ニコニコ大百科とピクシブ百科事典の双方に登録されている単語の辞書です。  
 読みがなはニコニコ大百科のデータを使っています。
 
 [ニコニコ大百科](http://dic.nicovideo.jp/)と、[ピクシブ百科事典](https://dic.pixiv.net/)のデータを利用させていただいています。
@@ -45,7 +45,8 @@ Google日本語入力およびMozc形式です。
 
 ニコニコ大百科のデータの処理に関しては、[ニコニコ大百科IME辞書 神は細部に宿り給う](http://tkido.com/blog/1019.html)の処理方法を参考にさせて頂きました。
 
-読みが違う単語を弾くために、[読みが通常の読み方とは異なる記事の一覧](https://dic.nicovideo.jp/id/4652210)のデータを使用して私自身も編集に参加しています。
+<s>読みが違う単語を弾くために、[読みが通常の読み方とは異なる記事の一覧](https://dic.nicovideo.jp/id/4652210)のデータを使用して私自身も編集に参加しています。</s>  
+フォーク者は少なくとも現時点で参加していません。
 
 # ライセンス
 
