@@ -57,6 +57,7 @@ jobs:
           rm -rf cache
           mkdir -p public
 
+          pwsh ./run-update.ps1
           stack exec dic-nico-intersection-pixiv
 
           entry_count=$(grep -Ev '^(#|[[:space:]]*$)' public/dic-nico-intersection-pixiv-google.txt | wc -l)
