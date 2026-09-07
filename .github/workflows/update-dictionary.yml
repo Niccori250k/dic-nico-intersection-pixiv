@@ -7,11 +7,7 @@ on:
       - 'cache/pixiv-raw.txt'
       - 'cache/nico-special-yomi.txt'
       - 'cache/pixiv-sitemap-cache.txt'
-  schedule:
-    # Every Sunday at 15:00 UTC (Monday at midnight JST).
-    - cron: '0 15 * * 0'
-    # Monthly release on the first day at 15:30 UTC (00:30 JST on the second).
-    - cron: '30 15 1 * *'
+      - 'cache/scrape-completed-at.txt'
   workflow_dispatch:
 
 permissions:
@@ -56,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf cache
-          git restore --source=HEAD -- cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt 2>/dev/null || true
+          git restore --source=HEAD -- cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt cache/scrape-completed-at.txt 2>/dev/null || true
           mkdir -p public
 
           pwsh ./run-update.ps1
@@ -89,21 +85,34 @@ jobs:
           git commit -m "Auto-update dictionary $(date '+%Y-%m-%d %H:%M:%S')"
           git push
 
-      - name: Create monthly release
-        if: github.event_name == 'schedule' && github.event.schedule == '30 15 1 * *'
+      - name: Create release if older than a month
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          latest_published_at=$(gh release list --limit 1 --exclude-drafts --exclude-pre-releases \
+            --json publishedAt --jq '.[0].publishedAt // empty')
+          cutoff_epoch=$(date -d '1 month ago' +%s)
+
+          if [ -n "$latest_published_at" ]; then
+            latest_epoch=$(date -d "$latest_published_at" +%s)
+            if [ "$latest_epoch" -ge "$cutoff_epoch" ]; then
+              echo "Latest release was published less than one month ago (${latest_published_at})."
+              exit 0
+            fi
+          else
+            echo "No published release found. Creating the first release."
+          fi
+
           created_at=$(awk -F': ' '/^# createdAt: / { print $2; exit }' public/dic-nico-intersection-pixiv-google.txt)
           if [[ ! "$created_at" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{4}$ ]]; then
             echo "Dictionary metadata has an invalid createdAt value: ${created_at}" >&2
             exit 1
           fi
-          release_name="$created_at"
-          release_tag="${created_at%%T*}"
-          release_target=$(git rev-parse HEAD)
 
+          release_tag="${created_at%%T*}"
+          release_name="$created_at"
+          release_target=$(git rev-parse HEAD)
           if gh release view "$release_tag" >/dev/null 2>&1; then
             gh release upload "$release_tag" public/dic-nico-intersection-pixiv-google.txt --clobber
           else
