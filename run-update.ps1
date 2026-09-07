@@ -23,9 +23,26 @@ if ($LASTEXITCODE -ne 0) {
     Write-Log "Warning: git pull failed. Proceeding anyway..."
 }
 
-# Run scraper
-Write-Log "Running python scrape_raw.py..."
-python scrape_raw.py
+# Run scraper with the first available Python launcher.
+$pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+$pythonArguments = @("scrape_raw.py")
+if (-not $pythonCommand) {
+    $pythonCommand = Get-Command python3 -ErrorAction SilentlyContinue
+}
+if (-not $pythonCommand) {
+    $uvCommand = Get-Command uv -ErrorAction SilentlyContinue
+    if ($uvCommand) {
+        $pythonCommand = $uvCommand
+        $pythonArguments = @("run", "python", "scrape_raw.py")
+    }
+}
+if (-not $pythonCommand) {
+    Write-Log "Error: no Python launcher found. Install Python or uv."
+    exit 1
+}
+
+Write-Log "Running $($pythonCommand.Name) $($pythonArguments -join ' ')..."
+& $pythonCommand.Source @pythonArguments
 if ($LASTEXITCODE -ne 0) {
     Write-Log "Error: Python scraper failed. Aborting commit/push."
     exit 1
@@ -37,7 +54,7 @@ $gitStatus = git status --porcelain cache/nico-raw.txt cache/pixiv-raw.txt cache
 
 if ($gitStatus) {
     Write-Log "Changes detected. Preparing to commit and push..."
-    git add cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt
+    git add cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt cache/scrape-completed-at.txt
     
     $commitMsg = "Update raw dictionary data (auto-crawled)"
     git commit -m $commitMsg
