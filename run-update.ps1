@@ -10,7 +10,7 @@ function Write-Log($message) {
     $formatted = "[$timestamp] [PowerShell] $message"
     Write-Output $formatted
     try {
-        Add-Content -Path "public/log.txt" -Value $formatted -Encoding UTF8
+        Add-Content -Path "cache/log.txt" -Value $formatted -Encoding UTF8
     } catch {}
 }
 
@@ -33,11 +33,11 @@ if ($LASTEXITCODE -ne 0) {
 
 # Check git status for changes in raw data files
 Write-Log "Checking for changes in raw data files..."
-$gitStatus = git status --porcelain public/nico-raw.txt public/pixiv-raw.txt public/nico-special-yomi.txt public/pixiv-sitemap-cache.txt
+$gitStatus = git status --porcelain cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt
 
 if ($gitStatus) {
     Write-Log "Changes detected. Preparing to commit and push..."
-    git add public/nico-raw.txt public/pixiv-raw.txt public/nico-special-yomi.txt public/pixiv-sitemap-cache.txt
+    git add cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt
     
     $commitMsg = "Update raw dictionary data (auto-crawled)"
     git commit -m $commitMsg

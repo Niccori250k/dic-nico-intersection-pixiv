@@ -3,9 +3,10 @@ name: Update Dictionary
 on:
   push:
     paths:
-      - 'public/nico-raw.txt'
-      - 'public/pixiv-raw.txt'
-      - 'public/nico-special-yomi.txt'
+      - 'cache/nico-raw.txt'
+      - 'cache/pixiv-raw.txt'
+      - 'cache/nico-special-yomi.txt'
+      - 'cache/pixiv-sitemap-cache.txt'
   schedule:
     # Every Sunday at 15:00 UTC (Monday at midnight JST).
     - cron: '0 15 * * 0'
@@ -55,6 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf cache
+          git restore --source=HEAD -- cache/nico-raw.txt cache/pixiv-raw.txt cache/nico-special-yomi.txt cache/pixiv-sitemap-cache.txt 2>/dev/null || true
           mkdir -p public
 
           pwsh ./run-update.ps1

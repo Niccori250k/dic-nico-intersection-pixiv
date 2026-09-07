@@ -112,10 +112,10 @@ getDicInfo = do
 -- から単語と読み一覧を取得します。
 getDicNico :: IO (S.HashSet Entry)
 getDicNico = do
-  rawExist <- doesFileExist "public/nico-raw.txt"
+  rawExist <- doesFileExist "cache/nico-raw.txt"
   if rawExist
     then do
-      content <- T.readFile "public/nico-raw.txt"
+      content <- T.readFile "cache/nico-raw.txt"
       let entries = mapMaybe parseNicoRawLine (T.lines content)
       return $ S.fromList entries
     else do
@@ -193,10 +193,10 @@ backoffLimitRetryPolicy = fullJitterBackoff (1 * 1000) <> limitRetries 10
 -- 実は取得が雑で"概要"とかも入ってしまっていますが、最終的に除外されるので実害がないので放置しています。
 getDicNicoSpecialYomi :: IO (S.HashSet Text)
 getDicNicoSpecialYomi = do
-  rawExist <- doesFileExist "public/nico-special-yomi.txt"
+  rawExist <- doesFileExist "cache/nico-special-yomi.txt"
   if rawExist
     then do
-      content <- T.readFile "public/nico-special-yomi.txt"
+      content <- T.readFile "cache/nico-special-yomi.txt"
       return $ S.fromList (map normalizeWord (T.lines content))
     else do
       let path = "cache/jp-nicovideo-dic-id-4652210"
@@ -213,10 +213,10 @@ getDicNicoSpecialYomi = do
 -- toFuzzyによって量子化が行われています。
 getDicPixiv :: IO (S.HashSet Text)
 getDicPixiv = do
-  rawExist <- doesFileExist "public/pixiv-raw.txt"
+  rawExist <- doesFileExist "cache/pixiv-raw.txt"
   if rawExist
     then do
-      content <- T.readFile "public/pixiv-raw.txt"
+      content <- T.readFile "cache/pixiv-raw.txt"
       return $ S.fromList (map (toFuzzy . normalizeWord) (T.lines content))
     else do
       let path = "cache/net-pixiv-dic"

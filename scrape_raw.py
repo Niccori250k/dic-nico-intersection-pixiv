@@ -8,23 +8,24 @@ import concurrent.futures
 import time
 import os
 
-# Create public directory if it doesn't exist
+# Create directories if they don't exist
+os.makedirs("cache", exist_ok=True)
 os.makedirs("public", exist_ok=True)
 
-# Logging function that writes to public/log.txt
+# Logging function that writes to cache/log.txt
 def log(msg):
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     formatted = f"[{timestamp}] {msg}"
     print(formatted)
     try:
-        with open("public/log.txt", "a", encoding="utf-8") as f:
+        with open("cache/log.txt", "a", encoding="utf-8") as f:
             f.write(formatted + "\n")
     except Exception:
         pass
 
 # Clear log file at startup
 try:
-    with open("public/log.txt", "w", encoding="utf-8") as f:
+    with open("cache/log.txt", "w", encoding="utf-8") as f:
         f.write("")
 except Exception:
     pass
@@ -197,8 +198,8 @@ def scrape_nico():
     
     # Load existing entries for merge (prevents data loss when categories fail)
     existing_entries = {}
-    if os.path.exists("public/nico-raw.txt"):
-        with open("public/nico-raw.txt", "r", encoding="utf-8") as f:
+    if os.path.exists("cache/nico-raw.txt"):
+        with open("cache/nico-raw.txt", "r", encoding="utf-8") as f:
             for line in f:
                 parts = line.strip().split("\t")
                 if len(parts) == 3:
@@ -242,10 +243,10 @@ def scrape_nico():
     merged.update(new_entries)
     log(f"Total entries after merge: {len(merged)}")
     
-    with open("public/nico-raw.txt", "w", encoding="utf-8") as f:
+    with open("cache/nico-raw.txt", "w", encoding="utf-8") as f:
         for (word, yomi), redir in sorted(merged.items()):
             f.write(f"{word}\t{yomi}\t{redir}\n")
-    log("Wrote public/nico-raw.txt")
+    log("Wrote cache/nico-raw.txt")
 
 def scrape_nico_special_yomi():
     log("Scraping Nico Nico Special Yomi (ID 4652210)...")
@@ -275,10 +276,10 @@ def scrape_nico_special_yomi():
                 seen.add(w)
                 unique_words.append(w)
                 
-        with open("public/nico-special-yomi.txt", "w", encoding="utf-8") as f:
+        with open("cache/nico-special-yomi.txt", "w", encoding="utf-8") as f:
             for w in unique_words:
                 f.write(f"{w}\n")
-        log(f"Wrote public/nico-special-yomi.txt ({len(unique_words)} words)")
+        log(f"Wrote cache/nico-special-yomi.txt ({len(unique_words)} words)")
     except Exception as e:
         log(f"Error scraping Special Yomi: {e}")
 
@@ -286,7 +287,7 @@ def scrape_nico_special_yomi():
 
 def initialize_pixiv_raw():
     # If pixiv-raw.txt doesn't exist, try to populate it from the existing google dictionary
-    if not os.path.exists("public/pixiv-raw.txt") and os.path.exists("public/dic-nico-intersection-pixiv-google.txt"):
+    if not os.path.exists("cache/pixiv-raw.txt") and os.path.exists("public/dic-nico-intersection-pixiv-google.txt"):
         log("Initializing pixiv-raw.txt from existing google dictionary...")
         words = set()
         with open("public/dic-nico-intersection-pixiv-google.txt", "r", encoding="utf-8") as f:
@@ -296,7 +297,7 @@ def initialize_pixiv_raw():
                 parts = line.split("\t")
                 if len(parts) >= 2:
                     words.add(parts[1].strip())
-        with open("public/pixiv-raw.txt", "w", encoding="utf-8") as f:
+        with open("cache/pixiv-raw.txt", "w", encoding="utf-8") as f:
             for w in sorted(list(words)):
                 f.write(f"{w}\n")
         log(f"Initialized pixiv-raw.txt with {len(words)} words.")
@@ -307,8 +308,8 @@ def scrape_pixiv():
     
     # Load existing words
     existing_words = set()
-    if os.path.exists("public/pixiv-raw.txt"):
-        with open("public/pixiv-raw.txt", "r", encoding="utf-8") as f:
+    if os.path.exists("cache/pixiv-raw.txt"):
+        with open("cache/pixiv-raw.txt", "r", encoding="utf-8") as f:
             for line in f:
                 w = line.strip()
                 if w:
@@ -316,9 +317,9 @@ def scrape_pixiv():
                     
     # Load sitemap cache
     cache = {}
-    cache_exists = os.path.exists("public/pixiv-sitemap-cache.txt")
+    cache_exists = os.path.exists("cache/pixiv-sitemap-cache.txt")
     if cache_exists:
-        with open("public/pixiv-sitemap-cache.txt", "r", encoding="utf-8") as f:
+        with open("cache/pixiv-sitemap-cache.txt", "r", encoding="utf-8") as f:
             for line in f:
                 parts = line.strip().split("\t")
                 if len(parts) == 2:
@@ -382,16 +383,16 @@ def scrape_pixiv():
             log(f"Added {len(words_from_crawl)} new words from crawled sitemaps.")
             
         # Save updated word list
-        with open("public/pixiv-raw.txt", "w", encoding="utf-8") as f:
+        with open("cache/pixiv-raw.txt", "w", encoding="utf-8") as f:
             for w in sorted(list(existing_words)):
                 f.write(f"{w}\n")
         log(f"Total Pixiv entries saved: {len(existing_words)}")
         
         # Save updated cache
-        with open("public/pixiv-sitemap-cache.txt", "w", encoding="utf-8") as f:
+        with open("cache/pixiv-sitemap-cache.txt", "w", encoding="utf-8") as f:
             for url, lastmod in sorted(new_cache.items()):
                 f.write(f"{url}\t{lastmod}\n")
-        log("Wrote public/pixiv-sitemap-cache.txt")
+        log("Wrote cache/pixiv-sitemap-cache.txt")
         
     except Exception as e:
         log(f"Error scraping Pixiv sitemap: {e}")
