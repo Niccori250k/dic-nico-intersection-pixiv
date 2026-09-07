@@ -44,7 +44,7 @@ def fetch_url(url, retries=5):
             if e.code == 429:
                 if i == retries - 1:
                     raise e
-                wait_time = (i + 1) * 10
+                wait_time = 600
                 log(f"[RateLimit] HTTP 429 on {url}. Retrying in {wait_time}s...")
                 time.sleep(wait_time)
             else:

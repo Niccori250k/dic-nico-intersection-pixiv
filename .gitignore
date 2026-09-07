@@ -29,6 +29,7 @@ cabal.project.local~
 
 *.cabal
 
+cache/log.txt
 
 # Ignore the resulting products
 
