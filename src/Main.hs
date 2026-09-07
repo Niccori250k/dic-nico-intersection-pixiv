@@ -52,8 +52,8 @@ main = do
   -- キャッシュディレクトリがなければ作成します
   createDirectoryIfMissing False "cache"
 
-  dicInfo <- getDicInfo
   dictionary <- getDictionary
+  dicInfo <- getDicInfo
 
   -- Mozc/Google日本語入力形式の辞書データを保存します。
   T.writeFile "public/dic-nico-intersection-pixiv-google.txt" $ T.unlines $ dicInfo : (toMozcLine <$> dictionary)
@@ -94,12 +94,15 @@ getDictionary = do
 -- | 生成日を含めたこのデータの情報を表示します。
 getDicInfo :: IO Text
 getDicInfo = do
-  time <- formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%z" <$> getZonedTime
+  scrapeCompletedAtExist <- doesFileExist "cache/scrape-completed-at.txt"
+  time <- if scrapeCompletedAtExist
+    then T.strip <$> T.readFile "cache/scrape-completed-at.txt"
+    else T.pack <$> formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%z" <$> getZonedTime
   return $ T.unlines
     [ "# name: dic-nico-intersection-pixiv"
     , "# description: ニコニコ大百科とピクシブ百科事典の共通部分の辞書"
     , "# github: https://github.com/ncaq/dic-nico-intersection-pixiv"
-    , "# createdAt: " <> convert time
+    , "# crawledAt: " <> time
     , "# copying:"
     , "# nicovideo: https://dic.nicovideo.jp/"
     , "# pixiv: https://dic.pixiv.net/"
