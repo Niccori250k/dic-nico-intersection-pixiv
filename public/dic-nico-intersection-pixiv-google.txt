@@ -1,7 +1,7 @@
 # name: dic-nico-intersection-pixiv
 # description: ニコニコ大百科とピクシブ百科事典の共通部分の辞書
 # github: https://github.com/ncaq/dic-nico-intersection-pixiv
-# crawledAt: 2026-09-07T08:10:30+0000
+# crawledAt: 2026-09-07T08:20:48+0000
 # copying:
 # nicovideo: https://dic.nicovideo.jp/
 # pixiv: https://dic.pixiv.net/
