@@ -54,9 +54,4 @@ if ($gitStatus) {
     Write-Log "No changes in raw data. Nothing to push."
 }
 
-$completionTime = Get-Date
-$completionTimestamp = $completionTime.ToString("yyyy-MM-ddTHH:mm:ss") + $completionTime.ToString("zzz").Replace(":", "")
-New-Item -ItemType Directory -Path "cache" -Force | Out-Null
-Set-Content -Path "cache/scrape-completed-at.txt" -Value $completionTimestamp -Encoding UTF8
-
 Write-Log "Update process finished."

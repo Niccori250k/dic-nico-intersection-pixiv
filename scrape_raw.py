@@ -407,3 +407,6 @@ if __name__ == "__main__":
     scrape_nico()
     
     log(f"Finished all scrapes in {time.time() - start_time:.2f} seconds.")
+    completion_timestamp = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    with open("cache/scrape-completed-at.txt", "w", encoding="utf-8") as f:
+        f.write(completion_timestamp + "\n")

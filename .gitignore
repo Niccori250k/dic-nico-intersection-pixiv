@@ -29,11 +29,6 @@ cabal.project.local~
 
 *.cabal
 
-cache/*
-!cache/nico-raw.txt
-!cache/pixiv-raw.txt
-!cache/nico-special-yomi.txt
-!cache/pixiv-sitemap-cache.txt
 
 # Ignore the resulting products
 
