@@ -86,9 +86,11 @@ getDictionary = do
       notMisconversionFn = notMisconversion dicNicoYomiMapNotRedirect
       -- 誤変換とリンク用フィルタをかけます
       dicNotMisAndLink = filter (\e -> notMisconversionFn e && notLinkFriendlyFn e) dicNotSeries
+      -- 日本語の中にあると考えられるチルダを全角にします
+      dicNormalized = normalizeTilde <$> dicNotMisAndLink
       -- 順番がバラバラになるので、読み/単語の優先度で最終的にソートします。
       -- また最後にリストの評価を並列で行うことで速度向上を狙います。
-      dictionarySorted = L.sortOn entryYomi (L.sortOn entryWord dicNotMisAndLink) `using` parList rseq
+      dictionarySorted = L.sortOn entryYomi (L.sortOn entryWord dicNormalized) `using` parList rseq
   return dictionarySorted
 
 -- | 生成日を含めたこのデータの情報を表示します。
@@ -327,7 +329,7 @@ toClearHiragana c
   | otherwise = c
 
 -- | 単語をある程度正確に推定出来る範囲で読み(ひらがな)に変換します。
--- 今の所カタカナ → ひらがなのみの返還です。
+-- 今の所カタカナ → ひらがなのみの変換です。
 toYomiEffortGroup :: Text -> [Text]
 toYomiEffortGroup w = if " ゙" `T.isInfixOf` w -- アネ゙デパミ゙みたいなのを解析するのは不可能でした
   then []
@@ -533,3 +535,65 @@ notMisconversion dicNicoYomiMap Entry{entryYomi, entryWord, entryRedirect} =
   || not (T.all isReadableHiragana entryWord)
      -- ファジーマッチでリダイレクト先っぽい記事を探索してあったらリダイレクトがあるとする
       && Just False /= (S.null . S.filter (entryWord `fuzzyEqual`) <$> M.lookup entryYomi dicNicoYomiMap)
+
+-- | 日本語文脈中のチルダを全角チルダにします。
+-- ここまでやっても"ALMIGHTY~仮面の約束 feat.川上洋平"が偽陰性になるが、一旦妥協
+normalizeTilde :: Entry -> Entry
+normalizeTilde entry = entry {entryWord = normalizeTildeText (entryWord entry)}
+
+normalizeTildeText :: Text -> Text
+normalizeTildeText = T.pack . go Nothing False . T.unpack
+  where
+    go _ _ [] = []
+    go previous inPair (c : cs)
+      | c == '~' && (inPair || isJapaneseTildeContext previous cs || enclosesJapaneseWord cs) =
+          '～' : go (Just c) (not inPair && enclosesJapaneseWord cs) cs
+      | otherwise = c : go (Just c) (inPair && c /= '~') cs
+
+-- | チルダが日本語として使われているか判定
+-- 前後の文字を見て判断する
+isJapaneseTildeContext :: Maybe Char -> [Char] -> Bool
+isJapaneseTildeContext previous next =
+  case previous of
+    Just c | isJapaneseTildeCharacter c -> case next of
+      []    -> True
+      c' : _ -> isJapaneseTildeCharacter c' || isSpace c'
+    Just c | isSpace c -> case next of
+      c' : _ -> isJapaneseTildeCharacter c'
+      []     -> False
+    _ -> False
+
+-- | ASCIIのチルダも例外的に日本語文脈の文字として扱う
+-- ～～のようにチルダが連続している場合がある
+isJapaneseTildeCharacter :: Char -> Bool
+isJapaneseTildeCharacter c = c == '~' || isWideEastAsian c
+
+-- 2つのチルダでサブタイトルを挟んでいる場合があるので、中身が日本語か判定
+enclosesJapaneseWord :: [Char] -> Bool
+enclosesJapaneseWord chars =
+  let word = L.takeWhile (/= '~') chars
+      rest = L.dropWhile (/= '~') chars
+  in any isWideEastAsian word && case rest of
+       '~' : _ -> True
+       _       -> False
+
+-- | UnicodeのEast_Asian_Width=Wideの主な範囲
+isWideEastAsian :: Char -> Bool
+isWideEastAsian c =
+  let o = ord c
+  in 0x1100 <= o && o <= 0x115F
+     || 0x2329 <= o && o <= 0x232A
+     || 0x2E80 <= o && o <= 0x303E
+     || 0x3040 <= o && o <= 0x3247
+     || 0x3250 <= o && o <= 0x4DBF
+     || 0x4E00 <= o && o <= 0xA4C6
+     || 0xA960 <= o && o <= 0xA97C
+     || 0xAC00 <= o && o <= 0xD7A3
+     || 0xF900 <= o && o <= 0xFAFF
+     || 0xFE10 <= o && o <= 0xFE19
+     || 0xFE30 <= o && o <= 0xFE6B
+     || 0xFF01 <= o && o <= 0xFF60
+     || 0xFFE0 <= o && o <= 0xFFE6
+     || 0x1B000 <= o && o <= 0x1B001
+     || 0x1F200 <= o && o <= 0x1F251
+     || 0x20000 <= o && o <= 0x3FFFD
