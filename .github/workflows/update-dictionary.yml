@@ -83,19 +83,19 @@ jobs:
           git commit -m "Auto-update dictionary $(date '+%Y-%m-%d %H:%M:%S')"
           git push
 
-      - name: Create release if older than a month
+      - name: Create release if not published this month
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           latest_published_at=$(gh release list --limit 1 --exclude-drafts --exclude-pre-releases \
             --json publishedAt --jq '.[0].publishedAt // empty')
-          cutoff_epoch=$(date -d '1 month ago' +%s)
+          current_month=$(date -u +%Y-%m)
 
           if [ -n "$latest_published_at" ]; then
-            latest_epoch=$(date -d "$latest_published_at" +%s)
-            if [ "$latest_epoch" -ge "$cutoff_epoch" ]; then
-              echo "Latest release was published less than one month ago (${latest_published_at})."
+            latest_release_month=$(date -u -d "$latest_published_at" +%Y-%m)
+            if [ "$latest_release_month" = "$current_month" ]; then
+              echo "A release was already published this month (${latest_published_at})."
               exit 0
             fi
           else
